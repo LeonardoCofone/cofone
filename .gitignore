@@ -1,0 +1,28 @@
+# environment
+.env
+.env.*
+
+# python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+*.egg
+.eggs/
+
+# cofone cache
+.cofone_cache/
+*.faiss
+
+# jupyter
+.ipynb_checkpoints/
+
+# editors
+.vscode/
+.idea/
+*.swp
+
+# os
+.DS_Store
+Thumbs.db
