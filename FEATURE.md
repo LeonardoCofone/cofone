@@ -23,11 +23,12 @@ load_dotenv()
 7. [Embedding providers — complete list](#7-embedding-providers--complete-list)
 8. [Debug mode](#8-debug-mode)
 9. [Chat memory](#9-chat-memory)
-10. [Streaming](#10-streaming)
-11. [Structured output (Pydantic)](#11-structured-output-pydantic)
-12. [Custom tools](#12-custom-tools)
-13. [API key configuration](#13-api-key-configuration)
-14. [Full parameter reference](#14-full-parameter-reference)
+10. [System prompt](#10-system-prompt)
+11. [Streaming](#11-streaming)
+12. [Structured output (Pydantic)](#12-structured-output-pydantic)
+13. [Custom tools](#13-custom-tools)
+14. [API key configuration](#14-api-key-configuration)
+15. [Full parameter reference](#15-full-parameter-reference)
 
 ---
 
@@ -803,7 +804,98 @@ Assistant:
 
 ---
 
-## 10. Streaming
+## 10. System prompt
+
+The system prompt tells the LLM **who it is and how to behave** — before any context or question.
+
+By default cofone uses:
+```
+You are a helpful assistant. Answer the user's question using ONLY the information
+provided in the context below. If the answer is not in the context, say you don't know.
+Be concise, accurate, and respond in the same language as the user's question.
+```
+
+Override it with `system_prompt=` to customize tone, role, language, or format.
+
+### Default (no system_prompt)
+```python
+RAG().add_source("docs/").run("What is this about?")
+# → polite, concise, answers only from context, matches user language
+```
+
+### Custom role
+```python
+RAG(
+    system_prompt="You are an expert lawyer. Answer formally and cite relevant clauses."
+).add_source("contract.pdf").run("What are the termination conditions?")
+```
+
+### Force a language
+```python
+RAG(
+    system_prompt="Rispondi sempre in italiano, in modo chiaro e sintetico."
+).add_source("docs/").run("What is the main topic?")
+# → always responds in Italian regardless of query language
+```
+
+### Restrict the scope
+```python
+RAG(
+    system_prompt="You are an art historian. Answer ONLY about paintings and sculptures. "
+                  "Refuse any question outside this topic."
+).add_source("docs/").run("Tell me about Leonardo")
+```
+
+### Control format
+```python
+RAG(
+    system_prompt="Answer always with a bullet-point list. Maximum 5 points. No prose."
+).add_source("docs/").run("Summarize this document")
+```
+
+### Combined with memory and streaming
+```python
+bot = RAG(
+    system_prompt="You are a friendly tutor. Explain concepts simply, use examples.",
+    memory=True,
+    max_history=5,
+).add_source("docs/")
+
+for token in bot.stream("Explain RAG to me like I'm 10"):
+    print(token, end="", flush=True)
+print()
+```
+
+### How it's injected
+The system prompt is always the **first line** of the prompt sent to the LLM:
+```
+{system_prompt}
+
+Context:
+[retrieved chunks]
+
+Question: {query}
+Answer:
+```
+
+With memory:
+```
+{system_prompt}
+
+Conversation so far:
+User: ...
+Assistant: ...
+
+Context:
+[retrieved chunks]
+
+User: {query}
+Assistant:
+```
+
+---
+
+## 11. Streaming
 
 `.stream()` is a generator — yields string tokens one by one as they arrive from the LLM.
 No waiting for the full response.
@@ -827,7 +919,7 @@ print()
 
 ---
 
-## 11. Structured output (Pydantic)
+## 12. Structured output (Pydantic)
 
 Pass a Pydantic `BaseModel` as `schema=` to `.run()`. Instead of a string, you get back a validated Python object.
 
@@ -882,7 +974,7 @@ print(result.model_dump_json(indent=2))
 
 ---
 
-## 12. Custom tools
+## 13. Custom tools
 
 Attach Python functions with `.add_tool()`. They are described to the LLM alongside the retrieved context.
 
@@ -920,7 +1012,7 @@ RAG()
 
 ---
 
-## 13. API key configuration
+## 14. API key configuration
 
 Three ways to pass keys, applied in this priority order:
 
@@ -978,7 +1070,7 @@ export OPENROUTER_API_KEY="sk-or-..."
 
 ---
 
-## 14. Full parameter reference
+## 15. Full parameter reference
 
 ### `RAG()` constructor
 
@@ -994,6 +1086,7 @@ export OPENROUTER_API_KEY="sk-or-..."
 | `embedding_api_key` | `str` | `None` | Embedding API key — overrides `.env` |
 | `chunk_mode` | `str` | `"smart"` | `"smart"` / `"paragraphs"` / `"sentences"` / `"fixed"` |
 | `persist_path` | `str\|Path` | `None` | Folder path to save/load FAISS index |
+| `system_prompt` | `str` | `None` | Custom system prompt. `None` uses built-in default |
 | `memory` | `bool` | `False` | Enable conversation history across calls |
 
 ### Methods

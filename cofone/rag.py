@@ -61,6 +61,12 @@ class RAG:
         Avoids recomputing embeddings on subsequent runs.
         Only used when faiss=True.
 
+    system_prompt : str, optional
+        Instructions prepended to every prompt as a system message.
+        Tells the LLM how to behave: role, tone, language, format, etc.
+        If None, a sensible default is used.
+        Default: None (uses built-in default prompt).
+
     memory : bool, optional
         If True, keeps conversation history across .run() calls.
         Default: False.
@@ -100,6 +106,8 @@ class RAG:
         chunk_mode="smart",
         persist_path=None,
         memory=False,
+        max_history=None,
+        system_prompt=None,
     ):
         self.model_provider = _detect_provider(model_provider, model, base_url)
         self.model          = model or DEFAULT_MODELS.get(self.model_provider, "gpt-4o-mini")
@@ -114,10 +122,17 @@ class RAG:
             chunk_mode=chunk_mode,
             persist_path=persist_path,
         )
-        self._tools   = []
-        self._debug   = False
-        self._memory  = memory
-        self._history = []  # list of (query, answer) tuples
+        self._tools       = []
+        self._debug       = False
+        self._memory      = memory
+        self._history     = []   # list of (query, answer) tuples
+        self._max_history = max_history
+        self._system_prompt = system_prompt or (
+            "You are a helpful assistant. "
+            "Answer the user's question using ONLY the information provided in the context below. "
+            "If the answer is not in the context, say you don't know. "
+            "Be concise, accurate, and respond in the same language as the user's question."
+        )
 
     def add_source(self, source):
         """
@@ -188,15 +203,21 @@ class RAG:
             tool_ctx = f"\n\nAvailable tools:\n{tool_descriptions}"
 
         if self._memory and self._history:
+            history = self._history[-self._max_history:] if self._max_history else self._history
             history_str = "\n".join(
-                f"User: {q}\nAssistant: {a}" for q, a in self._history
+                f"User: {q}\nAssistant: {a}" for q, a in history
             )
             return (
+                f"{self._system_prompt}\n\n"
                 f"Conversation so far:\n{history_str}\n\n"
                 f"Context:\n{context}{tool_ctx}\n\n"
                 f"User: {query}\nAssistant:"
             )
-        return f"Context:\n{context}{tool_ctx}\n\nQuestion: {query}\nAnswer:"
+        return (
+            f"{self._system_prompt}\n\n"
+            f"Context:\n{context}{tool_ctx}\n\n"
+            f"Question: {query}\nAnswer:"
+        )
 
     def run(self, query, schema=None):
         """

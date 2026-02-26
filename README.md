@@ -133,6 +133,11 @@ bot.chat("Who is Leonardo da Vinci?")
 bot.chat("When was he born?")          # knows the context — "he" = Leonardo
 bot.chat("What are his best works?")
 
+# custom system prompt — tell the LLM how to behave
+RAG(
+    system_prompt="You are an art historian. Answer only about paintings and sculptures."
+).add_source("docs/").run("Tell me about Leonardo")
+
 # ── Streaming ─────────────────────────────────────────────────────────────────
 
 for token in RAG().add_source("docs/").stream("Tell me about this document"):
