@@ -200,7 +200,7 @@ print(data.birth_year)  # 1452
 
 - 📦 PyPI: [pypi.org/project/cofone](https://pypi.org/project/cofone)
 - 💻 GitHub: [github.com/LeonardoCofone/cofone](https://github.com/LeonardoCofone/cofone)
-- 📖 Full feature reference: [FEATURES.md](FEATURES.md)
+- 📖 Full feature reference: [FEATURE.md](FEATURE.md)
 - 🔧 Installation guide: [INSTALL.md](INSTALL.md)
 
 ## License
