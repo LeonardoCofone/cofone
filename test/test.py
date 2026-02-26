@@ -21,6 +21,8 @@ rag = RAG(
 while True:
     print("\n--------------------------------------------------\n")
     dom = input("Enter a question: ")
-    answer = rag.run(dom)
-    print(answer)
+    dom = input("Enter a question: ")
+    for token in rag.stream(dom):                                 # Streaming response  
+        print(token, end="", flush=True)
+    print() 
     print("\n--------------------------------------------------\n")
