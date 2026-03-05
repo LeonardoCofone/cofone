@@ -1,0 +1,35 @@
+Cofone is a Python library for RAG (Retrieval-Augmented Generation).
+It allows anyone to transform their documents, notes, and texts into an intelligent knowledge base.
+With just a few commands, you can query this base using LLMs, obtaining precise answers, summaries, or explanations — without complex configurations.
+
+The library is modular: you can add extra tools, intelligent agents, and visual debugging.
+It also features a mini-DSL that makes the code more natural and readable.
+The idea is to make AI accessible, powerful, and customizable, leaving the developer full creative freedom without sacrificing simplicity and speed.
+
+Cofone supports multiple retrieval strategies. The default one is BM25, a classic keyword-based ranking algorithm that works well for most use cases and requires no extra dependencies.
+For more advanced semantic search, Cofone integrates FAISS (Facebook AI Similarity Search) combined with sentence-transformers embeddings.
+This approach finds conceptually related chunks even when the exact query words do not appear in the text.
+
+The chunking system is one of Cofone's core strengths.
+Instead of blindly splitting text every N characters, Cofone uses a smart chunker that respects the natural structure of the document.
+It first tries to split by paragraphs, and if a paragraph is too long, it further splits it into sentences.
+This preserves semantic coherence and improves retrieval quality significantly.
+
+Cofone supports four chunking modes: smart (default), paragraphs, sentences, and fixed.
+Each mode is suited for different types of documents.
+For example, fixed mode works well for raw data exports, while smart mode excels with structured articles and notes.
+
+Multiple LLM providers are supported out of the box: OpenRouter, OpenAI, Google Gemini, and Ollama for local inference.
+The provider is automatically detected from the model name, so you rarely need to specify it explicitly.
+For example, passing model='gpt-4o-mini' automatically routes the request to OpenAI, while model='gemini-2.0-flash' routes it to Gemini.
+
+Cofone is designed for developers who want to build RAG pipelines quickly without wrestling with boilerplate code.
+A typical use case involves loading a folder of PDFs, indexing them, and asking questions in natural language.
+Another common use case is building a personal knowledge assistant that combines local notes with web content fetched in real time.
+
+The library is open source and available on GitHub.
+Contributions, bug reports, and feature requests are welcome.
+The project follows a clean, minimal code style with no inline comments, favoring self-explanatory naming and concise logic.
+
+Version 0.1.0 is the first public release.
+Future versions will include persistent vector stores (ChromaDB), streaming responses, agent-based tool use, and a CLI interface.
